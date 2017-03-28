@@ -8,6 +8,7 @@ using namespace cv;
 using namespace Eigen;
 class  Particle
 {
+public:
 	double x;			// 当前x坐标
 	double y;			// 当前y坐标
 	double scale;		// 窗口比例系数
@@ -21,7 +22,7 @@ class  Particle
 	double weight;			// 该粒子的权重
 	Mat img;
 
-public:
+
 	Particle();
 
 	Particle(Mat img,cv::Rect bb);
