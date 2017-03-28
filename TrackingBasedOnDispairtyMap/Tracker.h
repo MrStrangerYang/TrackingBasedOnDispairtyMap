@@ -43,7 +43,7 @@ private:
 	bool m_needsIntegralHist;
 
 	// Á£×ÓÂË²¨²ÎÊı
-	Particle* particles;
+	vector<Particle> particles;
 	Mat disp_img;
 	
 	void UpdateLearner(const ImageRep& image);

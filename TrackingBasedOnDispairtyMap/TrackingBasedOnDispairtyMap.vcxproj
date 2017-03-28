@@ -154,6 +154,7 @@
     <ClCompile Include="ImageRep.cpp" />
     <ClCompile Include="LaRank.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Particle.cpp" />
     <ClCompile Include="StruckTrackingWeight.cpp" />
     <ClCompile Include="MultiFeatures.cpp" />
     <ClCompile Include="RawFeatures.cpp" />

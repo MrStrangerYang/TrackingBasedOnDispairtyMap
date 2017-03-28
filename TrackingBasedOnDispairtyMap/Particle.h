@@ -6,7 +6,7 @@
 using namespace std;
 using namespace cv;
 using namespace Eigen;
-struct  Particle
+class  Particle
 {
 	double x;			// 当前x坐标
 	double y;			// 当前y坐标
@@ -16,7 +16,14 @@ struct  Particle
 	double scalePre;		// 窗口预测比例系数
 	double xOri;			// 原始x坐标
 	double yOri;			// 原始y坐标
-	Rect rect;			// 原始区域大小
-	MatND hist;			// 粒子区域的特征直方图
-	double weight;		// 该粒子的权重
+	cv::Rect roi;			// roi
+	vector<float> descripter;
+	double weight;			// 该粒子的权重
+	Mat img;
+
+public:
+	Particle();
+
+	Particle(Mat img,cv::Rect bb);
+	void computeHOGFeature(Mat img, cv::Rect bb);
 };

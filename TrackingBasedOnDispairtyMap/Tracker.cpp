@@ -61,7 +61,8 @@ Tracker::Tracker(const Config& conf) :
 	m_needsIntegralImage(false)
 {
 	Reset();
-	particles = new Particle[conf.particle_num];
+	particles =vector<Particle>(m_config.particle_num);
+	cv::Rect rect;
 }
 
 Tracker::~Tracker()
@@ -155,11 +156,9 @@ void Tracker::Initialise(const cv::Mat& frame, FloatRect bb)
 	// step 1: 提取目标区域 深度图HOG特征
 
 	// step 2: 初始化particle
-	Particle* pParticles = particles;
-
 	for (int i = 0; i<m_config.particle_num; i++)
 	{
-		
+		Particle tmp_particle = Particle();
 	}
 
 }
