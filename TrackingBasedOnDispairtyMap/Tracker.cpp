@@ -141,24 +141,26 @@ void Tracker::Reset()
 }
 	
 
-void Tracker::Initialise(const cv::Mat& frame, FloatRect bb)
+void Tracker::Initialise(const cv::Mat& frame, const cv::Mat disp_frame ,FloatRect bb)
 {
 	m_bb = IntRect(bb);
 	//该类主要实现了积分图计算  后两个参数分别为true，false 
 	ImageRep image(frame, m_needsIntegralImage, m_needsIntegralHist);
 	for (int i = 0; i < 1; ++i)
 	{
+		//初始化时进行了一次采样
+		//初始化特征向量空间
 		UpdateLearner(image);
 	}
 	m_initialised = true;
 
 	/*********在此初始化粒子滤波首帧************/
-	// step 1: 提取目标区域 深度图HOG特征
 
-	// step 2: 初始化particle
+	// step 1: 初始化particle 提取目标区域 深度图HOG特征
 	for (int i = 0; i<m_config.particle_num; i++)
 	{
-		Particle tmp_particle = Particle();
+		Particle tmp_particle = Particle(disp_frame,bb);
+		particles.push_back(tmp_particle);
 	}
 
 }
@@ -166,8 +168,8 @@ void Tracker::Initialise(const cv::Mat& frame, FloatRect bb)
 void Tracker::Track(const cv::Mat& frame)
 {
 	ImageRep image(frame, m_needsIntegralImage, m_needsIntegralHist);	 //获得当前帧的积分图 
-	
-	vector<FloatRect> rects = Sampler::PixelSamples(m_bb, m_config.searchRadius);  //像素点抽样  
+	/******加入深度图HOG特征向量，更新粒子权重******/
+	vector<FloatRect> rects = Sampler::PixelSamples(m_bb, m_config.searchRadius);  //粒子滤波概率性抽样  
 	
 	vector<FloatRect> keptRects;
 	keptRects.reserve(rects.size());
@@ -180,8 +182,17 @@ void Tracker::Track(const cv::Mat& frame)
 	MultiSample sample(image, keptRects);     //多样本类，主要包括样本框以及ImageRep image  
 	
 	vector<double> scores;     //scores里存放的是论文中公式（10）后半部分 
+
+	//得到SVM分类scores
 	m_pLearner->Eval(sample, scores);
 	
+	//得到深度图HOG特征scores
+
+	//协同模型
+
+	//归一化协同模型
+
+	//选出最佳结果
 	double bestScore = -DBL_MAX;
 	int bestInd = -1;
 	for (int i = 0; i < (int)keptRects.size(); ++i)
@@ -192,10 +203,10 @@ void Tracker::Track(const cv::Mat& frame)
 			bestInd = i;              //找到bestScore  
 		}
 	}
-	/******加入深度图HOG特征向量，更新粒子权重******/
-	
-	UpdateDebugImage(keptRects, m_bb, scores);		//更新debug图像，用于显示  
-	
+
+	//更新粒子滤波权重
+
+	//更新SVM分类器特征向量空间	
 	if (bestInd != -1)
 	{
 		m_bb = keptRects[bestInd];

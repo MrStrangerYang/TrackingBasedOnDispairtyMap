@@ -2,7 +2,7 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <Eigen/Core>
-
+#include "Rect.h"
 using namespace std;
 using namespace cv;
 using namespace Eigen;
@@ -17,7 +17,7 @@ public:
 	double scalePre;		// 窗口预测比例系数
 	double xOri;			// 原始x坐标
 	double yOri;			// 原始y坐标
-	cv::Rect roi;			// roi
+	FloatRect roi;			// roi
 	vector<float> descripter;
 	double weight;			// 该粒子的权重
 	Mat img;
@@ -25,6 +25,6 @@ public:
 
 	Particle();
 
-	Particle(Mat img,cv::Rect bb);
-	void computeHOGFeature(Mat img, cv::Rect bb);
+	Particle(Mat img, FloatRect bb);
+	void computeHOGFeature(Mat img, FloatRect bb);
 };

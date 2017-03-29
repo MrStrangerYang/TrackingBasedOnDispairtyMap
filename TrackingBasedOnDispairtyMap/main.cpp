@@ -74,7 +74,7 @@ int main() {
 	char disp_imgPath[256];
 	sprintf(disp_imgPath, disp_img_format.c_str(), startFrame);
 	// imread 0  CV_LOAD_IMAGE_GRAYSCALE 读入灰度图
-	Mat tmp = imread(disp_imgPath, 0);
+	Mat tmp_disp_img = imread(disp_imgPath, 0);
 
 	// read init box from ground truth file   载入初始框  288,36,  26,43 
 	string gtFilePath = conf.sequenceBasePath + "/" + conf.sequenceName + "/" + conf.sequenceName + "_gt.txt";
@@ -109,10 +109,15 @@ int main() {
 	for (int frameInd = startFrame; frameInd <= endFrame; ++frameInd)
 	{
 		Mat frame;
-		
+		Mat disp_frame;
+
 		char imgPath[256];
+		char disp_img_path[256];
 		sprintf(imgPath, imgFormat.c_str(), frameInd);
+		sprintf(disp_img_path, disp_img_format.c_str(), frameInd);
+
 		Mat frameOrig = cv::imread(imgPath, 0);
+		Mat disp_frame= cv::imread(disp_img_path, 0);
 		if (frameOrig.empty())
 		{
 			cout << "error: could not read frame: " << imgPath << endl;
@@ -123,7 +128,7 @@ int main() {
 		// 使用首帧目标初始化
 		if (frameInd == startFrame)
 		{
-			tracker.Initialise(frame, initBB);
+			tracker.Initialise(frame,disp_frame, initBB);
 		}
 
 		if (tracker.IsInitialised())

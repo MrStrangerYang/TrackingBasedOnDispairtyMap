@@ -23,7 +23,7 @@ public:
 	Tracker(const Config& conf);
 	~Tracker();
 	
-	void Initialise(const cv::Mat& frame, FloatRect bb);
+	void Initialise(const cv::Mat& frame, const cv::Mat disp_frame, FloatRect bb);
 	void Reset();
 	void Track(const cv::Mat& frame);
 	void Debug();

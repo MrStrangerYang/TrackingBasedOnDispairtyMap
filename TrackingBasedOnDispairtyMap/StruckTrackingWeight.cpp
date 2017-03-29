@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
 		cvtColor(frame, result, CV_GRAY2RGB);
 		if (frameInd == startFrame)
 		{
-			tracker.Initialise(frame, initBB);
+			tracker.Initialise(frame,frame, initBB);
 		}
 		if (tracker.IsInitialised())
 		{
