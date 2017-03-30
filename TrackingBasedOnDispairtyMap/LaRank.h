@@ -47,6 +47,7 @@ public:
 	~LaRank();
 	
 	virtual void Eval(const MultiSample& x, std::vector<double>& results);
+	void Eval(const MultiSample & sample, std::vector<double>& results, FloatRect centre);
 	virtual void Update(const MultiSample& x, int y);
 	
 	virtual void Debug();

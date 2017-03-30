@@ -88,6 +88,19 @@ void LaRank::Eval(const MultiSample& sample, std::vector<double>& results)
 		results[i] = Evaluate(fvs[i], y);
 	}
 }
+void LaRank::Eval(const MultiSample& sample, std::vector<double>& results, FloatRect centre)
+{
+	vector<VectorXd> fvs;
+	const_cast<Features&>(m_features).Eval(sample, fvs);     //fvs存放haar特征值  
+	results.resize(fvs.size());
+	for (int i = 0; i < (int)fvs.size(); ++i)
+	{
+		// express y in coord frame of centre sample
+		FloatRect y(sample.GetRects()[i]);
+		y.Translate(-centre.XMin(), -centre.YMin());
+		results[i] = Evaluate(fvs[i], y);
+	}
+}
 //sample 当中有当前处理的image 和所有的样本框，y为原始目标框
 void LaRank::Update(const MultiSample& sample, int y)
 {
