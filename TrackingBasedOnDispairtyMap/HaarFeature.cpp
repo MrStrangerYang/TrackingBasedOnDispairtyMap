@@ -119,7 +119,9 @@ float HaarFeature::Eval(const Sample& s) const
 		const FloatRect& r = m_rects[i];
 		IntRect sampleRect((int)(roi.XMin()+r.XMin()*roi.Width()+0.5f), (int)(roi.YMin()+r.YMin()*roi.Height()+0.5f),
 			(int)(r.Width()*roi.Width()), (int)(r.Height()*roi.Height()));
+		
 		value += m_weights[i]*image.Sum(sampleRect);
+		
 	}
 	return value / (m_factor*roi.Area()*m_bb.Area());
 }

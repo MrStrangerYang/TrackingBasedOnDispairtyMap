@@ -77,9 +77,7 @@ int main(int argc, char* argv[])
 	int endFrame = -1;
 	FloatRect initBB;
 	string imgFormat;
-	float scaleW = 1.f;
-	float scaleH = 1.f;
-
+	string disp_format;
 
 
 	// parse frames file   
@@ -100,17 +98,17 @@ int main(int argc, char* argv[])
 		cout << "error: could not parse sequence frames file" << endl;
 		return EXIT_FAILURE;
 	}
-	// %05d是不足五位的前面补0，如23，输出为00023，%d是补空格，23输出 23
-	imgFormat = conf.sequenceBasePath + "/" + conf.sequenceName + "/imgs/%04d.jpg";
 
+	imgFormat = conf.sequenceBasePath + "/" + conf.sequenceName + "/imgs/" + conf.sequenceName + "_leftImage%d.png";
+	disp_format = conf.sequenceBasePath + "/" + conf.sequenceName + "/dispImgs/" + conf.sequenceName + "_dispImg%d.pgm";
 	// read first frame to get size
 	char imgPath[256];
+	char disp_img_path[256];
 	sprintf(imgPath, imgFormat.c_str(), startFrame);
+	sprintf(disp_img_path, disp_format.c_str(), startFrame);
+
 	// imread 0  CV_LOAD_IMAGE_GRAYSCALE 读入灰度图
 	Mat tmp = cv::imread(imgPath, 0);
-	cout << tmp.cols << "*" << tmp.rows << endl;
-	scaleW = (float)conf.frameWidth / tmp.cols;
-	scaleH = (float)conf.frameHeight / tmp.rows;
 
 	// read init box from ground truth file   初始框  288,36,  26,43
 	string gtFilePath = conf.sequenceBasePath + "/" + conf.sequenceName + "/" + conf.sequenceName + "_gt.txt";
@@ -132,8 +130,9 @@ int main(int argc, char* argv[])
 		cout << "error: could not parse sequence gt file" << endl;
 		return EXIT_FAILURE;
 	}
-	//将数据集的框进行缩放
-	initBB = FloatRect(xmin*scaleW, ymin*scaleH, width*scaleW, height*scaleH);
+
+	//将bonding box进行缩放
+	initBB = FloatRect(xmin, ymin, width, height);
 
 	namedWindow("result");
 
@@ -144,33 +143,37 @@ int main(int argc, char* argv[])
 	for (int frameInd = startFrame; frameInd <= endFrame; ++frameInd)
 	{
 		Mat frame;
-		waitKey();
-
 		char imgPath[256];
+		// 将startFrame传入imgPath,形成下一帧图片的地址
 		sprintf(imgPath, imgFormat.c_str(), frameInd);
-		// imread 0  CV_LOAD_IMAGE_GRAYSCALE 读入灰度图
+		sprintf(disp_img_path, disp_format.c_str(), frameInd);
+		// 读入图像、深度图像（灰度图）
 		Mat frameOrig = cv::imread(imgPath, 0);
+		Mat frame_disp = cv::imread(disp_img_path, 0);
+		
 		if (frameOrig.empty())
 		{
 			cout << "error: could not read frame: " << imgPath << endl;
 			return EXIT_FAILURE;
 		}
 		resize(frameOrig, frame, Size(conf.frameWidth, conf.frameHeight));
+		resize(frame_disp, frame_disp, Size(conf.frameWidth, conf.frameHeight));
 		cvtColor(frame, result, CV_GRAY2RGB);
+
 		if (frameInd == startFrame)
 		{
-			tracker.Initialise(frame,frame, initBB);
+			tracker.Initialise(frame, frame_disp, initBB);
 		}
 		if (tracker.IsInitialised())
 		{
 			//用每一帧进行Track时，进行参数调整
-			tracker.Track(frame);
-			//bunding box框
+			tracker.Track(frame, frame_disp);
+			//绘制bunding box框
 			rectangle(result, tracker.GetBB(), CV_RGB(0, 255, 0));
 			if (outFile)
 			{
 				const FloatRect& bb = tracker.GetBB();
-				outFile << bb.XMin() / scaleW << "," << bb.YMin() / scaleH << "," << bb.Width() / scaleW << "," << bb.Height() / scaleH << endl;
+				outFile << bb.XMin() << "," << bb.YMin() << "," << bb.Width() << "," << bb.Height() << endl;
 			}
 		}
 

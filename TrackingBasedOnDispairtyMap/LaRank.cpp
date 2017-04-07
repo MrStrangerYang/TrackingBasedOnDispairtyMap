@@ -114,16 +114,7 @@ void LaRank::Update(const MultiSample& sample, int y)
 		FloatRect r = rects[i];
 		r.Translate(-centre.XMin(), -centre.YMin());   //这就表示帧间目标位置变化关系
 		sp->yv.push_back(r);
-		if (!m_config.quietMode && m_config.debugMode)
-		{
-			// store a thumbnail for each sample  创建缩略图
-			// kTileSize = 30;
-			Mat im(kTileSize, kTileSize, CV_8UC1);
-			IntRect rect = rects[i];
-			cv::Rect roi(rect.XMin(), rect.YMin(), rect.Width(), rect.Height()); //感兴趣的区域是那些抽取的样本区域  
-			cv::resize(sample.GetImage().GetImage(0)(roi), im, im.size());   //0表示通道数，将感兴趣区域统一为30*30，并保存在sp里的images  
-			sp->images.push_back(im);
-		}
+		
 	}
 	// evaluate features for each sample  评估每个样本
 	sp->x.resize(rects.size());  //有多少个感兴趣的框，就有多少个特征值向量。  vector<Eigen::VectorXd> x    VectorXd：Dynamic column vector of doubles  

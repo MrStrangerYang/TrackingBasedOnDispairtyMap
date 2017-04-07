@@ -25,7 +25,7 @@ public:
 	
 	void Initialise(const cv::Mat& frame, const cv::Mat disp_frame, FloatRect bb);
 	void Reset();
-	void Track(const cv::Mat& frame);
+	void Track(const cv::Mat& frame, const cv::Mat& frame_disp);
 	void Debug();
 	
 	inline const FloatRect& GetBB() const { return m_bb; }

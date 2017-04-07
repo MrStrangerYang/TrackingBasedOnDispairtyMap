@@ -38,9 +38,10 @@ Particle::Particle(Mat img, FloatRect bb)
 void Particle::computeHOGFeature(Mat img, FloatRect bb)
 {
 	//                                     滑动窗口大小  , block大小     ,block移动步长,   cell大小    ,bins个数
-	HOGDescriptor *hog = new HOGDescriptor(cvSize(64, 48), cvSize(16, 16), cvSize(8, 8), cvSize(16, 16), 9);
+	HOGDescriptor *hog = new HOGDescriptor(cvSize(32, 24), cvSize(8, 8), cvSize(4,4), cvSize(8, 8), 9);
 	Mat roi_img(img, cv::Rect(bb.XMin(),bb.YMin(),bb.Width(),bb.Height()));
-	hog->compute(roi_img, this->descripter, Size(64, 28), Size(0, 0));
+	hog->compute(roi_img, this->descripter, Size(32, 24), Size(0, 0));
+	delete hog;
 	normalize(this->descripter,this->descripter);
 }
 

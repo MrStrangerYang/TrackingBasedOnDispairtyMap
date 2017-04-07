@@ -53,6 +53,12 @@ using namespace cv;
 using namespace std;
 using namespace Eigen;
 
+bool SortByWeight(const Particle &p1, const Particle &p2)
+{
+	return p1.weight > p2.weight;//降序排列  
+}
+
+
 Tracker::Tracker(const Config& conf) :
 	m_config(conf),
 	m_initialised(false),
@@ -61,7 +67,6 @@ Tracker::Tracker(const Config& conf) :
 	m_needsIntegralImage(false)
 {
 	Reset();
-	particles = vector<Particle>(m_config.particle_num);
 	cv::Rect rect;
 }
 
@@ -143,6 +148,7 @@ void Tracker::Reset()
 
 void Tracker::Initialise(const cv::Mat& frame, const cv::Mat disp_frame, FloatRect bb)
 {
+	
 	m_bb = IntRect(bb);
 	//该类主要实现了积分图计算  后两个参数分别为true，false 
 	ImageRep image(frame, m_needsIntegralImage, m_needsIntegralHist);
@@ -159,21 +165,23 @@ void Tracker::Initialise(const cv::Mat& frame, const cv::Mat disp_frame, FloatRe
 	// step 1: 初始化particle 提取目标区域 深度图HOG特征
 	for (int i = 0; i < m_config.particle_num; i++)
 	{
-		Particle tmp_particle = Particle(disp_frame, bb);
+		FloatRect disp_init_bb=  FloatRect(bb.XMin(), bb.YMin(), bb.Width(), bb.Height());
+		Particle tmp_particle = Particle(disp_frame, disp_init_bb);
 		particles.push_back(tmp_particle);
 	}
 
 }
 // 用每一帧进行Track时，进行参数调整
-void Tracker::Track(const cv::Mat& frame)
+void Tracker::Track(const cv::Mat& frame, const cv::Mat& frame_disp)
 {
 	ImageRep image(frame, m_needsIntegralImage, m_needsIntegralHist);	 //获得当前帧的积分图 
 	/******加入深度图HOG特征向量，更新粒子权重******/
 	vector<FloatRect> rects;  //粒子滤波概率性抽样  
 	RNG rng;
+	
 	for (int i = 0;i < m_config.particle_num;i++) {
 		double x, y, s, width, height;
-		Particle tmp_particle = particles[i];
+		Particle &tmp_particle = particles[i];
 
 		tmp_particle.xPre = tmp_particle.x;
 		tmp_particle.yPre = tmp_particle.y;
@@ -199,10 +207,11 @@ void Tracker::Track(const cv::Mat& frame)
 		tmp_particle.roi.Set(x, y, width, height);
 
 		// 计算HOG特性
-		HOGDescriptor *hog = new HOGDescriptor(cvSize(64, 48), cvSize(16, 16), cvSize(8, 8), cvSize(16, 16), 9);
+		HOGDescriptor *hog = new HOGDescriptor(cvSize(32, 24), cvSize(8, 8), cvSize(4, 4), cvSize(8, 8), 9);
 		Mat roi_img(frame, cv::Rect(x, y, width, height));
 		vector<float> tmp_descripter;
-		hog->compute(roi_img, tmp_descripter, Size(64, 28), Size(0, 0));
+		hog->compute(roi_img, tmp_descripter, Size(32, 24), Size(0, 0));
+		delete hog;
 		normalize(tmp_descripter, tmp_descripter);
 
 		// 深度图权重
@@ -216,9 +225,7 @@ void Tracker::Track(const cv::Mat& frame)
 		tmp_particle.weight = exp(-norm);
 		rects.push_back(FloatRect(x, y, width, height));  //分类器采样样本框
 	}
-
-
-
+	
 	MultiSample sample(image, rects);     //多样本类，主要包括样本框以及ImageRep image  
 
 	vector<double> scores;     //scores里存放的是论文中公式（10）后半部分 
@@ -229,30 +236,38 @@ void Tracker::Track(const cv::Mat& frame)
 	vector<double> weightVector;
 	double sum = 0.0;
 	for (int i = 0;i < m_config.particle_num;i++) {
+		
 		weightVector.push_back(scores[i]*particles[i].weight);
 		sum += weightVector[i];
 	}
+	
 	for (int i = 0; i<m_config.particle_num; i++)
 	{
 		weightVector[i] /= sum;
 		particles[i].weight = weightVector[i];
 	}
+	
 	// step 7: resample根据粒子的权重的后验概率分布重新采样
 	sort(particles.begin(), particles.end(), SortByWeight);
 	int np, k = 0;
 	vector<Particle> tmp_particles;
+
 	for (int i = 0;i < m_config.particle_num;i++) {
 		np = cvRound(particles[i].weight*m_config.particle_num);
+		
 		for (int j = 0; j < np; j++)
 		{
 			tmp_particles.push_back(particles[i]);
 			if (k == m_config.particle_num)
 				goto EXITOUT;
 		}
+		
 		//对于k之后的值都赋为particles[0]
 		while (k < m_config.particle_num)
 		{
+
 			tmp_particles.push_back(particles[0]);
+			k++;
 		}
 	EXITOUT:
 		for (int i = 0; i<m_config.particle_num; i++)
@@ -262,12 +277,21 @@ void Tracker::Track(const cv::Mat& frame)
 	}
 	sort(particles.begin(), particles.end(), SortByWeight);
 
+	float sum2 = 0;
+	for (int i = 0;i < m_config.particle_num;i++) {
+		sum2 += particles[i].weight;
+	}
+
+	for (int i = 0; i<m_config.particle_num; i++)
+	{
+		particles[i].weight /= sum2;
+	}
 	// step 8: 计算粒子的期望，作为跟踪结果
 	FloatRect tracking_result_rect(0, 0, 0, 0);
 	for (int i = 0; i < m_config.particle_num; i++)
 	{
 		FloatRect roi = particles[i].roi;
-		tracking_result_rect.Set(roi.XMin()* particles[i].weight, roi.YMin*particles[i].weight, roi.Width()*particles[i].weight, roi.Height()*particles[i].weight);
+		tracking_result_rect.Set(tracking_result_rect.XMin()+roi.XMin()* particles[i].weight, tracking_result_rect.YMin()+roi.YMin()*particles[i].weight, tracking_result_rect.Width()+ roi.Width()*particles[i].weight, tracking_result_rect.Height()+roi.Height()*particles[i].weight);
 	}
 	m_bb = tracking_result_rect;
 	UpdateLearner(image);
@@ -311,11 +335,6 @@ void Tracker::UpdateLearner(const ImageRep& image)
 #if VERBOSE		
 	cout << keptRects.size() << " samples" << endl;
 #endif
-
 	MultiSample sample(image, keptRects);
 	m_pLearner->Update(sample, 0);
-}
-bool SortByWeight(const Particle &p1, const Particle &p2)  
-{
-	return p1.weight > p2.weight;//降序排列  
 }

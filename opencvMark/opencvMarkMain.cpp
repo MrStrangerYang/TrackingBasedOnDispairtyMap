@@ -15,10 +15,9 @@ void on_mouse(int event, int x, int y, int type, void *param);
 void draw_rectangle(cv::Mat& img, cv::Rect box);
 int main() {
 
-	Mat image = imread("cup_packedImagePNG1.png");
+	Mat image = imread("cup_leftImage1.png");
 	image.copyTo(rowImage);
 	Mat tempimage;
-	/*
 	namedWindow("opencv±ê×¢");
 	setMouseCallback("opencv±ê×¢", on_mouse, (void*)&image);
 	while (1)
@@ -30,15 +29,15 @@ int main() {
 		if (waitKey(10) == 'q')
 			break;
 	}
-	printf("image size : %d * %d",image.cols/2,image.rows);
-	//(568,304,176,212)
-	printf("Bounding box : x %d , y %d , width %d ,height %d \n", rect.x, rect.y, rect.width, rect.height);*/
+	//(572,306,167,206)
+	printf("Bounding box : x %d , y %d , width %d ,height %d \n", rect.x, rect.y, rect.width, rect.height);
 	namedWindow("opencv");
-	Rect labelRect(568,304,176,212);
-	Mat image2 = imread("cup_leftImage1.png");
+	Rect labelRect(rect.x/4, rect.y/4, rect.width/4, rect.height/4);
+	Mat image2 = imread("cup_dispImg1.pgm");
 	draw_rectangle(image2, labelRect);
 	imshow("opencv", image2);
-	waitKey(10000);
+	printf("ImgSize: %d * %d \n DispImgSize: %d * %d ",tempimage.rows,tempimage.cols,image2.rows,image2.cols);
+	waitKey(1000000);
 	return 1;
 }
 

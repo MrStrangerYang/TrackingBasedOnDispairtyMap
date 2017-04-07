@@ -17,6 +17,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TrackingBasedOnDispairtyMap
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GenerateHOGFeature", "GenerateHOGFeature\GenerateHOGFeature.vcxproj", "{9D5953EA-47BB-4C63-8FFF-D38AC503DBBD}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcxproj", "{81780A98-D6E2-4AE7-8F53-142B70041A71}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -81,6 +83,14 @@ Global
 		{9D5953EA-47BB-4C63-8FFF-D38AC503DBBD}.Release|x64.Build.0 = Release|x64
 		{9D5953EA-47BB-4C63-8FFF-D38AC503DBBD}.Release|x86.ActiveCfg = Release|Win32
 		{9D5953EA-47BB-4C63-8FFF-D38AC503DBBD}.Release|x86.Build.0 = Release|Win32
+		{81780A98-D6E2-4AE7-8F53-142B70041A71}.Debug|x64.ActiveCfg = Debug|x64
+		{81780A98-D6E2-4AE7-8F53-142B70041A71}.Debug|x64.Build.0 = Debug|x64
+		{81780A98-D6E2-4AE7-8F53-142B70041A71}.Debug|x86.ActiveCfg = Debug|Win32
+		{81780A98-D6E2-4AE7-8F53-142B70041A71}.Debug|x86.Build.0 = Debug|Win32
+		{81780A98-D6E2-4AE7-8F53-142B70041A71}.Release|x64.ActiveCfg = Release|x64
+		{81780A98-D6E2-4AE7-8F53-142B70041A71}.Release|x64.Build.0 = Release|x64
+		{81780A98-D6E2-4AE7-8F53-142B70041A71}.Release|x86.ActiveCfg = Release|Win32
+		{81780A98-D6E2-4AE7-8F53-142B70041A71}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
